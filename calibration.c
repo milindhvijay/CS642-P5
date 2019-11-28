@@ -62,10 +62,22 @@ int main(int argc, char** argv)
     int i;
 
     /* Calculate average hit time for a cache block */
+    int runningTotalHitTime = 0;
+    for (i=0; i<4*1024; i++) {
+        maccess(&array[i]);
+        runningTotalHitTime += measure_one_block_access_time(&array[i]);
+    }
+    hit_time = runningTotalHitTime/(4*1024);
 
 
     /* Calculate average miss time for a cache block */
-
+    int runningTotalMissTime = 0;
+    for (i=0; i<4*1024; i++) {
+        flush(&array[i]);
+        runningTotalMissTime += measure_one_block_access_time(&array[i]);
+    }
+    miss_time = runningTotalMissTime/(4*1024);
+    
 
     printf("%lu,%lu\n", hit_time, miss_time);
     return 0;
