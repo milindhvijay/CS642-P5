@@ -112,10 +112,6 @@ int main(int argc, char* argv[])
 	int i = 0;
 	int lines = 85;
 	int offset = 0;
-
-
-
-	
 	int hitThreshold = hit_time + 50;
 
 	while (1) {
