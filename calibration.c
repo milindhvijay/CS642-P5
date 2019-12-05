@@ -7,10 +7,10 @@
    to the address specified. */
 void maccess(void *addr)
 {
-    asm volatile ("movq (%0), %%rax\n"
-        :
-        : "c" (addr)
-        : "rax");
+	asm volatile ("movq (%0), %%rax\n"
+	              :
+	              : "c" (addr)
+	              : "rax");
 }
 
 /* Flushes the cache block corresponding
@@ -18,67 +18,67 @@ void maccess(void *addr)
    hierarchy. */
 void flush(void *addr)
 {
-    asm volatile("clflush 0(%0)\n"
-        :
-        : "c" (addr)
-        :"rax");
+	asm volatile ("clflush 0(%0)\n"
+	              :
+	              : "c" (addr)
+	              : "rax");
 }
 
 /* Reads the Time Stamp Counter. */
 uint64_t rdtsc() {
-  uint64_t a, d;
-  asm volatile ("mfence");
-  asm volatile ("rdtsc" : "=a" (a), "=d" (d));
-  a = (d<<32) | a;
-  asm volatile ("mfence");
-  return a;
+	uint64_t a, d;
+	asm volatile ("mfence");
+	asm volatile ("rdtsc" : "=a" (a), "=d" (d));
+	a = (d<<32) | a;
+	asm volatile ("mfence");
+	return a;
 }
 
 /* combines rdtsc and maccess */
 uint64_t measure_one_block_access_time(void* addr)
 {
-    uint64_t cycles;
+	uint64_t cycles;
 
-    asm volatile("mov %1, %%r8\n\t"
-            "lfence\n\t"
-            "rdtsc\n\t"
-            "mov %%eax, %%edi\n\t"
-            "mov (%%r8), %%r8\n\t"
-            "lfence\n\t"
-            "rdtsc\n\t"
-            "sub %%edi, %%eax\n\t"
-    : "=a"(cycles) /*output*/
-    : "r"(addr)
-    : "r8", "edi");
+	asm volatile ("mov %1, %%r8\n\t"
+	              "lfence\n\t"
+	              "rdtsc\n\t"
+	              "mov %%eax, %%edi\n\t"
+	              "mov (%%r8), %%r8\n\t"
+	              "lfence\n\t"
+	              "rdtsc\n\t"
+	              "sub %%edi, %%eax\n\t"
+	              : "=a" (cycles) /*output*/
+	              : "r" (addr)
+	              : "r8", "edi");
 
-    return cycles;
+	return cycles;
 }
 
 int main(int argc, char** argv)
 {
-    char array[4*1024]; // modern processors have 4KB ways in L1
-    memset(array, -1, 4*1024*sizeof(char));
-    unsigned long hit_time = 0, miss_time = 0;    
-    int i;
+	char array[4*1024]; // modern processors have 4KB ways in L1
+	memset(array, -1, 4*1024*sizeof(char));
+	unsigned long hit_time = 0, miss_time = 0;
 
-    /* Calculate average hit time for a cache block */
-    int runningTotalHitTime = 0;
-    for (i=0; i<4*1024; i++) {
-        maccess(&array[i]);
-        runningTotalHitTime += measure_one_block_access_time(&array[i]);
-    }
-    hit_time = runningTotalHitTime/(4*1024);
+	/* Calculate average hit time for a cache block */
+	long long runningTotalHitTime = 0;
+	for (int i = 0; i < 4*1024; i++) {
+		maccess(&array[i]);
+		sched_yield();
+		runningTotalHitTime += measure_one_block_access_time(&array[i]);
+	}
+	hit_time = runningTotalHitTime/(4*1024);
+
+	/* Calculate average miss time for a cache block */
+	long long runningTotalMissTime = 0;
+	for (int i = 0; i < 4*1024; i++) {
+		flush(&array[i]);
+		sched_yield();
+		runningTotalMissTime += measure_one_block_access_time(&array[i]);
+	}
+	miss_time = runningTotalMissTime/(4*1024);
 
 
-    /* Calculate average miss time for a cache block */
-    int runningTotalMissTime = 0;
-    for (i=0; i<4*1024; i++) {
-        flush(&array[i]);
-        runningTotalMissTime += measure_one_block_access_time(&array[i]);
-    }
-    miss_time = runningTotalMissTime/(4*1024);
-    
-
-    printf("%lu,%lu\n", hit_time, miss_time);
-    return 0;
+	printf("%lu,%lu\n", hit_time, miss_time);
+	return 0;
 }
