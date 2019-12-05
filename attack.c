@@ -113,19 +113,13 @@ int main(int argc, char* argv[])
 	int lines = 85;
 	int offset = 0;
 	int hitThreshold = hit_time + 50;
-	// printf("hit_time: %ld\n", hit_time);
-	// printf("miss_time: %ld\n", miss_time);
-	// printf("hitThreshold: %d\n", hitThreshold);
 
 	while (1) {
-		// Not sure what offset is at this point
-		// (index*prime + offset)%(maxrange)
 		index = (i * prime + 1)%lines;
 		offset = 0;
 		for (int j = 0; j < index; j++) {
 			offset += csv_offsets[j];
 		}
-		//printf("Checking Index %d\n", index);
 		for (int k = 0; k < 10; ++k) {
 			flush(addr + offset);
 			sched_yield();
@@ -133,7 +127,6 @@ int main(int argc, char* argv[])
 			if (time < (uint64_t)hitThreshold) {
 				a[index] = 1;
 				printf("Index %d was accessed.\n", index);
-//				printf("Time to access: %lu\n", time);
 			}
 		}
 		i++;
