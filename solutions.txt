@@ -1,0 +1,50 @@
+Part A:
+
+It goes through different addresses finds the time taken to access the blocks when is in the cache and and when it is not.
+Hit time is found when the block is previously accessed and then calculating the time to access it again. Hit_miss time is
+found by flushing the cache and then accessing it. The final times are the average of hit time and hit_miss time for accessing
+all the addresses.
+
+Part B:
+
+Her, out aim is to use flush and reload to find the data used by the victim. For that, the attacker has to access the same file
+that the victim has accessed and they have to share the processor's cache. After we flush all the cache, we wait till the victim
+access the data and then calculate the access time by iterating through all the blocks. If we get a something that is approximately
+equal to the hit time, it means that we found the cache and the victim used that block. We continue tis process multiple times.
+
+Part C:
+
+Prime+Probe:
+
+1. If you were to carry out an attack similar to the one described in Part B but using Prime+Probe technique, would it be easier or 
+harder than the Flush+Reload method? Why?
+
+    It would be harder to use Prime+Probe technique than Flush+Reload. Flush+Reload is better in Part B because the there is only one
+    step to check which part of the memory was accessed, but the other uses two steps. Since we know what file is accessed, we can directly
+    find out which data was accessed by finding the cache hits.
+
+
+2. How does the cache organisation (number of levels, cache size) affect Prime+Probe attack? Is that any different from Flush+Reload?
+
+    In Prime+Probe attack, the attacker must know the addressing system so that they can find where the address was accessed in the
+    memory. In Flush+Reload, the process doesn't differ much, we still find where the cache was accessedd by detecting a cache hit.
+
+Spectre and Meltdown:
+
+1. Between Spectre and Meltdown attacks, which one is closer to be a covert channel, and why?
+
+    Meltdown is the closest to a covert channel as it use Flush+Reload method to access the cache line that has the memory location 
+    of the data the attacker wants to access.
+
+2. Which of the two attacks do you think is stronger? Why?
+
+    I think meltdown attacks are stronger because it does not need that many condition for initialization. The attacker need not have
+    too much control on the process.
+
+3. Linux released a patch with a feature called KPTI (Kernel Page Table Isolation) to defend against one of these attacks. Which one?
+
+    KPTI is the feature that mitigates Meltdown attack and improves kernel hardening against bypassing kernel address space layout.
+    It prevents the process to load any cache that has data that anyone doesn't have access to. I was done by making user space
+    isolation and kernel memory stronger.
+ 
+
